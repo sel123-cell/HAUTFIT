@@ -1,0 +1,376 @@
+/* Enhanced HautFit Styles with Loading States and Animations */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  transition: all 0.5s ease;
+}
+
+/* 🌊 Animated watercolor background */
+.watercolor-bg {
+  filter: blur(4px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 150vw;
+  height: 150vh;
+  transform: translate(-10vw, -10vh);
+  background: linear-gradient(45deg, 
+    rgba(139, 0, 0, 0.8),
+    rgba(254, 95, 63, 0.6),
+    rgba(178, 34, 34, 0.7),
+    rgba(255, 69, 0, 0.6),
+    rgba(0, 0, 0, 0.4)
+  );
+  background-size: 400% 400%;
+  animation: watercolorFlow 20s ease-in-out infinite;
+  z-index: -3;
+  pointer-events: none;
+}
+
+@keyframes watercolorFlow {
+  0% { background-position: 0% 50%; transform: translate(-10vw, -10vh) rotate(0deg); }
+  25% { background-position: 100% 0%; transform: translate(-12vw, -8vh) rotate(0.5deg); }
+  50% { background-position: 100% 50%; transform: translate(-8vw, -12vh) rotate(0.2deg); }
+  75% { background-position: 0% 100%; transform: translate(-12vw, -10vh) rotate(-0.3deg); }
+  100% { background-position: 0% 50%; transform: translate(-10vw, -10vh) rotate(0deg); }
+}
+
+
+
+/* Welcome screen */
+#welcomeScreen {
+  text-align: center;
+  animation: fadeIn 1.5s ease-in-out;
+  padding: 20px;
+}
+
+#welcomeScreen h1 {
+  font-size: 2.5rem;
+  color: #005792;
+  margin-bottom: 10px;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#welcomeScreen p {
+  font-size: 1.3rem;
+  margin-bottom: 30px;
+  color: #666;
+  font-weight: 300;
+}
+
+/* Event & Gender screens */
+#eventOptionsScreen, #genderScreen {
+  text-align: center;
+  animation: fadeIn 1.2s ease-in-out;
+}
+
+#eventOptionsScreen button, #genderScreen button {
+  margin: 10px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  border-radius: 12px;
+  border: none;
+  background-color: #38517e;
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+#eventOptionsScreen button:hover, #genderScreen button:hover {
+  transform: scale(1.05);
+  background-color: #364391;
+}
+
+/* HautFit Camera and Data Layout */
+.hautfit-container {
+  display: flex;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+#video-feed, #cameraFeed {
+  width: 400px;
+  height: 300px;
+  min-height: 300px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: #000;
+  display: block !important;
+  object-fit: cover;
+  border: 3px solid #333;
+}
+
+#results-panel {
+  width: 300px;
+  min-height: 300px;
+}
+
+/* HautFit Result Cards */
+.result-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 400px;
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+.result-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.result-card p {
+  margin: 6px 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.suggestion-box {
+  margin-top: 15px;
+  padding: 12px;
+  background: #364391;
+  color: #000;
+  font-weight: bold;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Get Started Button */
+#get-started-btn {
+  margin-top: 20px;
+  padding: 14px 28px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 12px;
+  border: none;
+  background-color: #364391;
+  color: #e9e9e9;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+#get-started-btn:hover {
+  transform: scale(1.05);
+  background-color: #38517e;
+}
+
+
+#eventOptionsScreen h2 {
+  font-size: 2rem;
+  color: #ffd369;
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 215, 105, 0.7); /* soft glow */
+}
+
+
+.event-option {
+  margin: 12px;
+  padding: 16px 36px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 14px;
+  border: 2px solid #ffd369;
+  background: rgba(255, 255, 255, 0.1); /* translucent to blend with watercolor */
+  color: #ffd369;
+  cursor: pointer;
+  backdrop-filter: blur(6px); /* glassy effect */
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.event-option:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 20px rgba(255, 215, 105, 0.5);
+}
+
+
+#eventOptionsScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+}
+
+
+/* Gender Selection Heading */
+#genderScreen h2 {
+  font-size: 2rem;
+  color: #ffd369; /* Gold accent to match event heading */
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 215, 105, 0.7); /* subtle glow */
+}
+
+/* Gender Buttons */
+.gender-option {
+  margin: 12px;
+  padding: 16px 36px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 14px;
+  border: 2px solid #ffd369;
+  background: rgba(255, 255, 255, 0.1); /* translucent to blend with watercolor */
+  color: #ffd369;
+  cursor: pointer;
+  backdrop-filter: blur(6px); /* glassy/frosted effect */
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.gender-option:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 20px rgba(255, 215, 105, 0.5);
+}
+
+/* Container Alignment */
+#genderScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+}
+
+
+/* Logo bounce + fade */
+#logo {
+  width: 300px; /* adjust size as needed */
+  cursor: pointer;
+  animation: bounceLogo 4s ease-in-out infinite;
+  transition: opacity 1s ease, filter 0.5s ease;
+  /* Drop shadow that follows the image shape */
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4));
+  border-radius: 50%; /* optional if your logo is circular */
+}
+
+/* Fade-out class triggered on click */
+#logo.fade-out {
+  opacity: 0;
+}
+
+/* Slow bouncing animation */
+@keyframes bounceLogo {
+  0%   { transform: translateY(0px); }
+  25%  { transform: translateY(-10px); }
+  50%  { transform: translateY(0px); }
+  75%  { transform: translateY(8px); }
+  100% { transform: translateY(0px); }
+}
+
+.camera-section h2 {
+  text-align: center;
+  width: 100%;
+  margin-bottom: 20px; /* optional spacing */
+  color: #ffffff; /* keep consistent with your theme */
+}
+
+.camera-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center horizontally */
+  justify-content: flex-start;
+  margin-top: 20px;
+}
+
+.camera-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center camera feed */
+  justify-content: center;
+  position: relative;
+}
+
+#cameraFeed {
+  width: 400px;
+  height: 300px;
+  border-radius: 10px;
+  border: 4px solid white;
+  object-fit: cover;
+  display: block;
+}
+
+.pose-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 400px;
+  height: 300px;
+  pointer-events: none;
+}
+
+.analysis-overlay {
+  margin-top: 12px;
+  background: rgba(0,0,0,0.3);
+  padding: 12px;
+  border-radius: 10px;
+  color: #fff;
+  width: 400px;
+  text-align: left;
+}
+
+
+#cameraIntroContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* center horizontally */
+  justify-content: center;
+  margin-top: 15px;
+  gap: 10px; /* spacing between text and button */
+}
+
+#cameraIntroText {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #fff;
+  max-width: 400px; /* optional, to match camera width */
+}
+
+#cameraYesBtn {
+  padding: 14px 28px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 12px;
+  border: none;
+  background-color: #364391;
+  color: #e9e9e9;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+#cameraYesBtn:hover {
+  transform: scale(1.05);
+  background-color: #38517e;
+  box-shadow: 0 0 12px rgba(255, 215, 105, 0.5);
+}

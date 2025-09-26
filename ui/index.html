@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HautFit Mirror</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="hautfit.css">
+
+  <!-- MediaPipe Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+</head>
+<body>
+  <!-- 🌊 Watercolor Background -->
+  <div class="watercolor-bg"></div>
+
+  <!-- Welcome Screen -->
+  <div id="welcomeScreen">
+    <!-- Clickable Logo -->
+    <img src="Seal_of_Holy_Angel_University.png" alt="Logo" id="logo">
+
+    <!-- Intro text -->
+    <div id="introText" style="display: none;">
+      <h1>Welcome to HautFit</h1>
+      <p>Your personalized smart mirror experience</p>
+      <button id="get-started-btn">Get Started</button>
+    </div>
+  </div>
+
+  <!-- Event Options Screen -->
+  <div id="eventOptionsScreen" style="display: none;">
+    <h2>Select an Event</h2>
+    <button class="event-option" data-event="casual">Casual</button>
+    <button class="event-option" data-event="formal">Formal</button>
+    <button class="event-option" data-event="party">Party</button>
+  </div>
+
+  <!-- Gender Selection Screen -->
+  <div id="genderScreen" style="display: none;">
+    <h2>Select Gender</h2>
+    <button class="gender-option" data-gender="male">Male</button>
+    <button class="gender-option" data-gender="female">Female</button>
+  </div>
+
+  <!-- Main HautFit Module -->
+  <div id="hautfit" class="module" style="display: none; opacity: 0; transition: opacity 1s ease-in-out;">
+    <div class="hautfit-container">
+      
+      <!-- Camera View Section -->
+      <div class="camera-section">
+        <h2>📹 HautFit Smart Mirror</h2>
+        <div class="camera-container" style="position: relative; display: inline-block;">
+          
+          <!-- Camera selection dropdown -->
+          <div style="margin-bottom: 10px; text-align: center;">
+            <label for="cameraSelect" style="color:white;">Select Camera: </label>
+            <select id="cameraSelect"></select>
+          </div>
+
+          <!-- Webcam video -->
+          <video id="cameraVideo" autoplay playsinline 
+            style="border-radius:10px; border:4px solid white; width:640px; height:480px;"></video>
+
+          <!-- Canvas overlay -->
+          <canvas id="poseCanvas" 
+            style="position:absolute; top:0; left:0; width:640px; height:480px;"></canvas>
+          
+          <!-- Intro text + button -->
+          <div id="cameraIntroContainer">
+            <div id="cameraIntroText">
+              You are about to experience our HautFit smart mirror, are you ready to know what fits for you?
+            </div>
+            <button id="cameraYesBtn">Yes</button>
+          </div>
+
+          <!-- Scanning message -->
+          <div id="cameraMessage" style="display:none; color:white; font-size:1.2rem; margin-top:15px; text-align:center;">
+            Please stand still as we are about to scan your body<span id="dots">.</span>
+          </div>
+
+          <!-- ✅ New Skin Tone Result Box -->
+          <div id="skinToneBox" style="display:none; color:yellow; font-size:1.2rem; margin-top:15px; text-align:center;">
+            Detected Skin Tone: <span id="skinToneResult">Not yet scanned</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS Scripts -->
+  <script src="main.js"></script>
+</body>
+</html>

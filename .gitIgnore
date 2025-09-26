@@ -1,0 +1,6 @@
+backend/dataset/
+.env 
+backend/skin_dataset.npz
+backend/skin_dataset.npz
+backend/body_tone_cnn.h5
+backend/__pycache__/

@@ -1,0 +1,65 @@
+/* HautFit Styles */
+.result-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 400px;
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.8s ease-in-out;
+}
+
+.result-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  text-align: center;
+  color: #ffd369;
+}
+
+.result-card p {
+  margin: 6px 0;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.suggestion-box {
+  margin-top: 15px;
+  padding: 12px;
+  background: #ffd369;
+  color: #000;
+  font-weight: bold;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+#mirror-screen {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+}
+
+#video-feed {
+  width: 400px;
+  height: 300px;
+  border: 3px solid #333;
+  border-radius: 12px;
+  object-fit: cover;
+  background: black;
+}
+
+#results-panel {
+  width: 300px;
+  min-height: 300px;
+}
