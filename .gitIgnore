@@ -1,6 +1,18 @@
-backend/dataset/
-.env 
-backend/skin_dataset.npz
-backend/skin_dataset.npz
-backend/body_tone_cnn.h5
-backend/__pycache__/
+# Python Virtual Environment
+.venv/
+venv/
+__pycache__/
+
+# Secret Keys (NEVER PUSH THIS)
+.env
+
+# Large Datasets (We only push the trained .h5 model)
+dataset_skin_tones/
+
+# Temporary AI generated images
+backend/temp_user_*.jpg
+
+# OS generated files
+.DS_Store
+Thumbs.db
+*.h5

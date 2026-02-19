@@ -1,0 +1,16 @@
+{
+  "female": {
+    "XS": { "numeric": "0-2", "chest_min": 30, "chest_max": 32, "waist_min": 25, "waist_max": 27 },
+    "S":  { "numeric": "4-6", "chest_min": 33, "chest_max": 35, "waist_min": 28, "waist_max": 30 },
+    "M":  { "numeric": "8-10", "chest_min": 36, "chest_max": 38, "waist_min": 31, "waist_max": 33 },
+    "L":  { "numeric": "12-14", "chest_min": 39, "chest_max": 41, "waist_min": 34, "waist_max": 36 },
+    "XL": { "numeric": "16-18", "chest_min": 42, "chest_max": 44, "waist_min": 37, "waist_max": 39 },
+    "XXL":{ "numeric": "20-22", "chest_min": 45, "chest_max": 48, "waist_min": 40, "waist_max": 42 }
+  },
+  "male": {
+    "S":  { "chest_width": 21.25, "body_length": 28.5 },
+    "M":  { "chest_width": 22.25, "body_length": 29.5 },
+    "L":  { "chest_width": 23.25, "body_length": 30.5 },
+    "XL": { "chest_width": 24.25, "body_length": 31.5 }
+  }
+}
