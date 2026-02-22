@@ -1,376 +1,484 @@
-/* Enhanced HautFit Styles with Loading States and Animations */
+/* Import a clean, modern font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  transition: all 0.5s ease;
+/* ==========================================================================
+   1. BASE MIRROR SETTINGS & ANIMATED VIGNETTE BACKGROUND
+   ========================================================================== */
+body, html {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif; 
+    overflow-x: hidden;
+    overflow-y: auto; 
+    
+    background-image: 
+        radial-gradient(circle at center, transparent 30%, #050001 95%), 
+        linear-gradient(135deg, #1a0205 0%, #5c0f19 30%, #8f1525 50%, #5c0f19 70%, #1a0205 100%);
+    
+    background-size: 100% 100%, 300% 300%;
+    animation: smoothWave 15s ease-in-out infinite;
+    background-attachment: fixed; 
+    background-color: #050001;
 }
 
-/* 🌊 Animated watercolor background */
+@keyframes smoothWave {
+    0% { background-position: center, 0% 50%; }
+    50% { background-position: center, 100% 50%; }
+    100% { background-position: center, 0% 50%; }
+}
+
+/* ==========================================================================
+   1.5 FLOATING GLOWING PARTICLES
+   ========================================================================== */
 .watercolor-bg {
-  filter: blur(4px);
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 150vw;
-  height: 150vh;
-  transform: translate(-10vw, -10vh);
-  background: linear-gradient(45deg, 
-    rgba(139, 0, 0, 0.8),
-    rgba(254, 95, 63, 0.6),
-    rgba(178, 34, 34, 0.7),
-    rgba(255, 69, 0, 0.6),
-    rgba(0, 0, 0, 0.4)
-  );
-  background-size: 400% 400%;
-  animation: watercolorFlow 20s ease-in-out infinite;
-  z-index: -3;
-  pointer-events: none;
+    display: block !important; 
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0; 
+    pointer-events: none;
+    overflow: hidden;
 }
 
-@keyframes watercolorFlow {
-  0% { background-position: 0% 50%; transform: translate(-10vw, -10vh) rotate(0deg); }
-  25% { background-position: 100% 0%; transform: translate(-12vw, -8vh) rotate(0.5deg); }
-  50% { background-position: 100% 50%; transform: translate(-8vw, -12vh) rotate(0.2deg); }
-  75% { background-position: 0% 100%; transform: translate(-12vw, -10vh) rotate(-0.3deg); }
-  100% { background-position: 0% 50%; transform: translate(-10vw, -10vh) rotate(0deg); }
+.watercolor-bg::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 3px;
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: 
+        15vw 20vh 2px rgba(255, 255, 255, 0.8), 
+        85vw 10vh 2px rgba(255, 200, 200, 0.7), 
+        50vw 50vh 3px rgba(255, 180, 180, 0.6), 
+        20vw 80vh 2px rgba(255, 255, 255, 0.9), 
+        70vw 90vh 2px rgba(255, 200, 200, 0.7), 
+        90vw 60vh 3px rgba(255, 180, 180, 0.6), 
+        10vw 40vh 2px rgba(255, 255, 255, 0.8), 
+        40vw 15vh 2px rgba(255, 200, 200, 0.7), 
+        60vw 35vh 3px rgba(255, 180, 180, 0.6), 
+        30vw 70vh 2px rgba(255, 255, 255, 0.9);
+    animation: floatParticles 20s linear infinite;
 }
 
+.watercolor-bg::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 1.5px; height: 1.5px;
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: 
+        10vw 10vh 1px rgba(255, 255, 255, 0.5), 
+        90vw 30vh 1px rgba(255, 200, 200, 0.4), 
+        40vw 60vh 1px rgba(255, 180, 180, 0.3), 
+        30vw 90vh 1px rgba(255, 255, 255, 0.6), 
+        80vw 80vh 1px rgba(255, 200, 200, 0.4), 
+        60vw 20vh 1px rgba(255, 180, 180, 0.3), 
+        20vw 30vh 1px rgba(255, 255, 255, 0.6), 
+        50vw 40vh 1px rgba(255, 200, 200, 0.4), 
+        70vw 50vh 1px rgba(255, 180, 180, 0.3), 
+        85vw 45vh 1px rgba(255, 255, 255, 0.5);
+    animation: floatParticles 35s linear infinite reverse;
+}
 
+@keyframes floatParticles {
+    0% { transform: translateY(100vh); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-10vh); opacity: 0; }
+}
 
-/* Welcome screen */
+h1, h2, p { margin-top: 0; letter-spacing: 0.5px; }
+
+/* ==========================================================================
+   2. PREMIUM GLASSMORPHISM PANELS
+   ========================================================================== */
+#introText, #eventOptionsScreen, #genderScreen, 
+#cameraIntroContainer, #tryOnModeContainer, #results-container {
+    position: relative;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.05) !important; 
+    backdrop-filter: blur(30px) !important;           
+    -webkit-backdrop-filter: blur(30px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.25) !important; 
+    border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 32px !important;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5) !important;
+    padding: 40px; text-align: center;
+}
+
+/* Container alignments */
 #welcomeScreen {
-  text-align: center;
-  animation: fadeIn 1.5s ease-in-out;
-  padding: 20px;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); 
+    width: 100%; display: flex; flex-direction: column; align-items: center;
+    z-index: 20;
 }
 
-#welcomeScreen h1 {
-  font-size: 2.5rem;
-  color: #005792;
-  margin-bottom: 10px;
-  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-#welcomeScreen p {
-  font-size: 1.3rem;
-  margin-bottom: 30px;
-  color: #666;
-  font-weight: 300;
-}
-
-/* Event & Gender screens */
 #eventOptionsScreen, #genderScreen {
-  text-align: center;
-  animation: fadeIn 1.2s ease-in-out;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); 
+    width: 90%; max-width: 500px; 
 }
 
-#eventOptionsScreen button, #genderScreen button {
-  margin: 10px;
-  padding: 12px 24px;
-  font-size: 1rem;
-  border-radius: 12px;
-  border: none;
-  background-color: #38517e;
-  color: #ffffff;
-  cursor: pointer;
-  transition: transform 0.2s ease, background 0.3s ease;
+/* BRANDING ELEMENTS */
+.brand-header {
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+    opacity: 0.7;
+}
+.diamond-icon { color: #ef4444; margin-right: 5px; }
+.subtitle {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 40px;
 }
 
-#eventOptionsScreen button:hover, #genderScreen button:hover {
-  transform: scale(1.05);
-  background-color: #364391;
+#introText h1 {
+    font-size: 2.2rem; color: #ffffff; margin-bottom: 10px;
+    font-weight: 600; text-shadow: 0 0 25px rgba(255, 0, 0, 0.6);
 }
 
-/* HautFit Camera and Data Layout */
+#introText p, #cameraIntroText {
+    font-size: 1.1rem; margin-bottom: 30px; color: #cbd5e1; font-weight: 300;
+}
+
+#eventOptionsScreen h2, #genderScreen h2 {
+    font-size: 1.8rem; color: #ffffff; margin-bottom: 15px; font-weight: 600;
+}
+
+/* ==========================================================================
+   3. SHOELESS BRANDED BUTTONS & CARDS
+   ========================================================================== */
+.vertical-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    width: 100%;
+}
+
+.horizontal-stack {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* Event & Gender Card Base */
+.event-card, .gender-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 20px !important;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    margin: 0 !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Event Specific Cards */
+.event-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100% !important;
+    max-width: 400px;
+    padding: 20px 25px !important;
+    text-align: left !important;
+}
+
+/* Gender Specific Cards */
+.gender-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 180px !important;
+    height: 220px !important;
+    padding: 0 !important;
+}
+
+/* Internal Layouts & Click Fixes */
+.card-content, .card-title, .card-desc, .card-icon, 
+.gender-icon-circle, .gender-label {
+    pointer-events: none !important; 
+}
+
+.card-title, .gender-label {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.card-title { font-size: 1.2rem; }
+.gender-label { font-size: 1.1rem; letter-spacing: 2px; }
+
+.card-desc {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 2px;
+}
+
+.card-icon, .gender-icon-circle {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+.gender-icon-circle { width: 80px; height: 80px; font-size: 2.5rem; margin-bottom: 20px; }
+
+/* Interactive States */
+.event-card:hover, .gender-card:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    transform: translateY(-5px);
+}
+
+.event-card:hover .card-icon, .gender-card:hover .gender-icon-circle {
+    background: #ef4444; 
+}
+
+.event-card:active, .gender-card:active { transform: scale(0.98); }
+
+/* Default Buttons */
+button, .gender-option {
+    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff; font-family: 'Poppins', sans-serif; padding: 16px 30px;
+    border-radius: 20px; font-size: 1.1rem; font-weight: 600; cursor: pointer;
+    transition: all 0.3s ease; margin: 8px; width: 80%; 
+}
+
+#get-started-btn, #cameraYesBtn, .gender-option:hover {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important; 
+    border: none !important;
+    color: #ffffff !important; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4) !important;
+}
+
+#get-started-btn:hover, #cameraYesBtn:hover {
+    box-shadow: 0 15px 30px rgba(59, 130, 246, 0.6) !important; transform: translateY(-3px);
+}
+
+#btnVirtualTryOn, #btnImageTryOn, #results-container button:first-of-type, #results-container button:last-of-type {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important; 
+    border: none !important; color: #ffffff !important; 
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4) !important;
+}
+
+/* ==========================================================================
+   4. CAMERA & VIDEO FEED UI
+   ========================================================================== */
+#hautfit {
+    /* main.js turns this into display: block, so we let it be block */
+    width: 100%;
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
 .hautfit-container {
-  display: flex;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 1rem;
-  gap: 20px;
-  justify-content: center;
-  align-items: flex-start;
+    display: flex; 
+    flex-direction: column; 
+    width: 100%; 
+    max-width: 450px; /* Keeps the portrait layout sleek */
+    margin: 0 auto; 
+    gap: 20px; 
+    
+    /* THE MAGIC FIX: This inner container handles the perfect centering now */
+    justify-content: center; 
+    align-items: center;
+    min-height: 100vh; 
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-#video-feed, #cameraFeed {
-  width: 400px;
-  height: 300px;
-  min-height: 300px;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  background: #000;
-  display: block !important;
-  object-fit: cover;
-  border: 3px solid #333;
+.video-container {
+    position: relative; 
+    width: 100%; 
+    /* TALLER CAMERA FEED: Changes it to a vertical mirror format */
+    aspect-ratio: 9 / 14; 
+    border-radius: 24px; 
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(239, 68, 68, 0.6); 
+    background: #000;
 }
 
-#results-panel {
-  width: 300px;
-  min-height: 300px;
+#cameraVideo, #poseCanvas, #smartMirrorVideo {
+    display: block !important; 
+    object-fit: cover; 
+    width: 100%; 
+    height: 100%;
 }
 
-/* HautFit Result Cards */
-.result-card {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 20px;
-  margin: 20px auto;
-  max-width: 400px;
-  color: #fff;
-  text-align: left;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-  animation: fadeIn 0.8s ease-in-out;
+#uiPanel { 
+    width: 100%; 
+    display: flex;
+    justify-content: center;
 }
 
-.result-card h2 {
-  font-size: 1.5rem;
-  margin-bottom: 12px;
-  text-align: center;
-  color: #ffffff;
+/* SMALLER UI BOXES */
+#cameraIntroContainer, #tryOnModeContainer {
+    padding: 25px !important; /* Shrunk padding */
+    width: 95%; /* Makes the box slightly narrower than the camera */
+    max-width: 400px;
 }
 
-.result-card p {
-  margin: 6px 0;
-  font-size: 1rem;
-  line-height: 1.4;
+/* ==========================================================================
+   5. WARDROBE MODAL & BACKGROUND BLUR
+   ========================================================================== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 10px; } 
+
+/* THE MAGIC: Blur the camera and background when the results box appears */
+body:has(#results-container) .video-container {
+    filter: blur(15px) brightness(0.4);
+    transition: filter 0.8s ease, brightness 0.8s ease;
 }
 
-.suggestion-box {
-  margin-top: 15px;
-  padding: 12px;
-  background: #364391;
-  color: #000;
-  font-weight: bold;
-  border-radius: 10px;
-  text-align: center;
-  font-size: 1.1rem;
+body:has(#results-container) .watercolor-bg {
+    filter: blur(20px) brightness(0.4);
+    transition: all 0.8s ease;
 }
 
-/* Fade-in animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Pull the results box out of the layout and lock it in the center */
+#results-container {
+    position: fixed !important; /* Forces it to float over everything */
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    
+    width: 90% !important;
+    max-width: 450px !important;
+    max-height: 85vh !important;
+    z-index: 9999 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    
+    /* Premium Dark Glassmorphism Style */
+    background: rgba(30, 0, 5, 0.75) !important; 
+    backdrop-filter: blur(30px) !important;
+    -webkit-backdrop-filter: blur(30px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 32px !important;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9) !important;
+    
+    /* Smooth 3D pop-in animation */
+    animation: modalPopIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
 }
 
-
-/* Get Started Button */
-#get-started-btn {
-  margin-top: 20px;
-  padding: 14px 28px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  border-radius: 12px;
-  border: none;
-  background-color: #364391;
-  color: #e9e9e9;
-  cursor: pointer;
-  transition: transform 0.2s ease, background 0.3s ease;
+@keyframes modalPopIn {
+    0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-#get-started-btn:hover {
-  transform: scale(1.05);
-  background-color: #38517e;
+/* Wardrobe Grid Styles */
+#outfit-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr) !important; 
+    gap: 15px; width: 100%; box-sizing: border-box; padding-bottom: 15px;
 }
 
-
-#eventOptionsScreen h2 {
-  font-size: 2rem;
-  color: #ffd369;
-  text-align: center;
-  margin-bottom: 30px;
-  font-weight: 700;
-  text-shadow: 0 0 8px rgba(255, 215, 105, 0.7); /* soft glow */
+#outfit-grid img {
+    border-radius: 16px !important; transition: all 0.3s ease !important; background: rgba(0,0,0,0.6) !important;
+    height: 160px !important; width: 100% !important;
 }
 
-
-.event-option {
-  margin: 12px;
-  padding: 16px 36px;
-  font-size: 1.2rem;
-  font-weight: 600;
-  border-radius: 14px;
-  border: 2px solid #ffd369;
-  background: rgba(255, 255, 255, 0.1); /* translucent to blend with watercolor */
-  color: #ffd369;
-  cursor: pointer;
-  backdrop-filter: blur(6px); /* glassy effect */
-  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
-}
-
-.event-option:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0 20px rgba(255, 215, 105, 0.5);
+#outfit-grid div:hover img {
+    border: 2px solid #ef4444 !important; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.6) !important; 
+    transform: scale(1.03);
 }
 
 
-#eventOptionsScreen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 40vh;
+/* ==========================================================================
+   6. ANIMATIONS & LOGO
+   ========================================================================== */
+/* Standard fade in for static elements */
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(20px); } 
+    to { opacity: 1; transform: translateY(0); } 
 }
 
-
-/* Gender Selection Heading */
-#genderScreen h2 {
-  font-size: 2rem;
-  color: #ffd369; /* Gold accent to match event heading */
-  text-align: center;
-  margin-bottom: 30px;
-  font-weight: 700;
-  text-shadow: 0 0 8px rgba(255, 215, 105, 0.7); /* subtle glow */
+/* NEW: Dedicated fade-in for absolutely centered screens to prevent jumping */
+@keyframes centerFadeIn { 
+    from { opacity: 0; transform: translate(-50%, -45%); } 
+    to { opacity: 1; transform: translate(-50%, -50%); } 
 }
 
-/* Gender Buttons */
-.gender-option {
-  margin: 12px;
-  padding: 16px 36px;
-  font-size: 1.2rem;
-  font-weight: 600;
-  border-radius: 14px;
-  border: 2px solid #ffd369;
-  background: rgba(255, 255, 255, 0.1); /* translucent to blend with watercolor */
-  color: #ffd369;
-  cursor: pointer;
-  backdrop-filter: blur(6px); /* glassy/frosted effect */
-  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
+#introText, .result-card {
+    animation: fadeIn 0.8s ease-out forwards;
 }
 
-.gender-option:hover {
-  transform: scale(1.05);
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 0 20px rgba(255, 215, 105, 0.5);
+/* Apply the fixed animation to your main screens */
+#welcomeScreen, #eventOptionsScreen, #genderScreen {
+    animation: centerFadeIn 0.8s ease-out forwards;
 }
 
-/* Container Alignment */
-#genderScreen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 70vh;
-}
-
-
-/* Logo bounce + fade */
 #logo {
-  width: 300px; /* adjust size as needed */
-  cursor: pointer;
-  animation: bounceLogo 4s ease-in-out infinite;
-  transition: opacity 1s ease, filter 0.5s ease;
-  /* Drop shadow that follows the image shape */
-  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4));
-  border-radius: 50%; /* optional if your logo is circular */
+    width: 220px; cursor: pointer; animation: floatLogo 6s ease-in-out infinite;
+    transition: opacity 0.8s ease, filter 0.5s ease; filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.8));
+    margin-bottom: 20px;
+    z-index: 30;
 }
 
-/* Fade-out class triggered on click */
-#logo.fade-out {
-  opacity: 0;
+#logo.fade-out { opacity: 0; transform: scale(0.9); }
+
+@keyframes floatLogo {
+    0%   { transform: translateY(0px); } 
+    50%  { transform: translateY(-15px); } 
+    100% { transform: translateY(0px); }
 }
 
-/* Slow bouncing animation */
-@keyframes bounceLogo {
-  0%   { transform: translateY(0px); }
-  25%  { transform: translateY(-10px); }
-  50%  { transform: translateY(0px); }
-  75%  { transform: translateY(8px); }
-  100% { transform: translateY(0px); }
+/* ==========================================================================
+   7. FLOATING STATUS PILL (Fixes Camera Centering)
+   ========================================================================== */
+#cameraMessage {
+    position: fixed !important;
+    bottom: 8% !important; /* Floats nicely near the bottom of the screen */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    
+    background: rgba(0, 0, 0, 0.65) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 50px !important;
+    padding: 15px 35px !important;
+    
+    font-size: 1.1rem !important;
+    color: #4ade80 !important;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5) !important;
+    z-index: 1000 !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    letter-spacing: 1px !important;
 }
 
-.camera-section h2 {
-  text-align: center;
-  width: 100%;
-  margin-bottom: 20px; /* optional spacing */
-  color: #ffffff; /* keep consistent with your theme */
+/* ==========================================================================
+   8. OVERRIDE INLINE SPACERS (Forces Camera to Center)
+   ========================================================================== */
+/* Kills the invisible flex spacer pushing the camera up */
+#uiPanel {
+    flex: 0 0 auto !important; 
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-.camera-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* center horizontally */
-  justify-content: flex-start;
-  margin-top: 20px;
+/* Forces the main HTML wrapper to vertically center */
+#hautfit > div {
+    justify-content: center !important;
 }
 
-.camera-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* center camera feed */
-  justify-content: center;
-  position: relative;
-}
-
-#cameraFeed {
-  width: 400px;
-  height: 300px;
-  border-radius: 10px;
-  border: 4px solid white;
-  object-fit: cover;
-  display: block;
-}
-
-.pose-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 400px;
-  height: 300px;
-  pointer-events: none;
-}
-
-.analysis-overlay {
-  margin-top: 12px;
-  background: rgba(0,0,0,0.3);
-  padding: 12px;
-  border-radius: 10px;
-  color: #fff;
-  width: 400px;
-  text-align: left;
-}
-
-
-#cameraIntroContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* center horizontally */
-  justify-content: center;
-  margin-top: 15px;
-  gap: 10px; /* spacing between text and button */
-}
-
-#cameraIntroText {
-  text-align: center;
-  font-size: 1.1rem;
-  color: #fff;
-  max-width: 400px; /* optional, to match camera width */
-}
-
-#cameraYesBtn {
-  padding: 14px 28px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  border-radius: 12px;
-  border: none;
-  background-color: #364391;
-  color: #e9e9e9;
-  cursor: pointer;
-  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
-}
-
-#cameraYesBtn:hover {
-  transform: scale(1.05);
-  background-color: #38517e;
-  box-shadow: 0 0 12px rgba(255, 215, 105, 0.5);
+/* Removes old top-margins from the camera wrapper */
+#hautfit > div > div:first-child {
+    margin-top: 0 !important;
 }

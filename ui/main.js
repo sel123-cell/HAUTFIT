@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("✅ DOM Loaded - V15 (Decart Dynamic Import Fix)");
+    console.log("✅ DOM Loaded - V18 (Fun Portrait Reset Button & Modal Cleanup)");
 
     // --- DOM ELEMENTS ---
     const genderButtons = document.querySelectorAll(".gender-option");
@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const eventScreen = document.getElementById("eventOptionsScreen");
     const genderScreen = document.getElementById("genderScreen");
     const hautfit = document.getElementById("hautfit");
+    const logo = document.getElementById("logo");
     
     // Camera & Canvas
     const videoElement = document.getElementById("cameraVideo");
@@ -16,9 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const cameraYesBtn = document.getElementById("cameraYesBtn");
     const cameraIntroContainer = document.getElementById("cameraIntroContainer");
-    const tryOnModeContainer = document.getElementById("tryOnModeContainer"); // NEW UI
-    const btnImageTryOn = document.getElementById("btnImageTryOn"); // NEW UI
-    const btnVirtualTryOn = document.getElementById("btnVirtualTryOn"); // NEW UI
+    const tryOnModeContainer = document.getElementById("tryOnModeContainer"); 
+    const btnImageTryOn = document.getElementById("btnImageTryOn"); 
+    const btnVirtualTryOn = document.getElementById("btnVirtualTryOn"); 
     const uiPanel = document.getElementById("uiPanel");
 
     // --- STATE ---
@@ -26,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedGender = null;
     let currentSessionOutfits = []; 
     let isScanningComplete = false; 
-    let tryOnMode = null; // Will store "image" or "virtual"
-    let activeRealtimeClient = null; // For Decart API
+    let tryOnMode = null; 
+    let activeRealtimeClient = null; 
 
     // --- 1. SIZE MAPPING RULES (Asian Fit) ---
     const sizeMapping = {
@@ -35,9 +36,25 @@ document.addEventListener("DOMContentLoaded", () => {
         "female": { "Inverted Triangle": "L", "Rectangle": "M", "Triangle": "S" }
     };
 
+    // ==========================================
+    // 🔄 KIOSK SMART RESET LOGIC
+    // ==========================================
+    // Flushes memory and instantly routes back to the Event screen
+    function resetToEventScreen() {
+        sessionStorage.setItem('skipToEvent', 'true');
+        location.reload();
+    }
+
+    // Check if we just refreshed from a "Generate Again" click
+    if (sessionStorage.getItem('skipToEvent') === 'true') {
+        sessionStorage.removeItem('skipToEvent');
+        if (welcomeScreen) welcomeScreen.style.display = "none";
+        if (logo) logo.style.display = "none";
+        if (eventScreen) eventScreen.style.display = "block";
+    }
+
     // --- 2. NAVIGATION LOGIC ---
-    const logo = document.getElementById("logo");
-    if (logo) {
+    if (logo && sessionStorage.getItem('skipToEvent') !== 'true') {
       logo.addEventListener("click", () => {
         logo.classList.add("fade-out");
         setTimeout(() => { logo.style.display = "none"; document.getElementById("introText").style.display = "block"; }, 1000);
@@ -66,9 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   
-    // ==========================================
-    // 🚨 NEW FLOW: PRE-SCAN MODE SELECTION 🚨
-    // ==========================================
     if (cameraYesBtn) {
       cameraYesBtn.addEventListener("click", () => {
         cameraIntroContainer.style.display = "none";
@@ -110,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
           clearInterval(dotInterval);
           if(msg) msg.textContent = "🔍 Scanning started...";
-          initPoseDetection(); // ONLY START CAMERA HERE
+          initPoseDetection(); 
         }, 3000);
     }
   
@@ -238,11 +252,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   
     // =========================================================
-    //      5. DISPLAY RESULTS (PORTRAIT INJECTION)
+    //      5. DISPLAY RESULTS & WARDROBE
     // =========================================================
     function displayResults(outfits, skinTone, bodyType, recommendedSize, showImmediately = false) {
         currentSessionOutfits = outfits; 
-        
         uiPanel.innerHTML = "";
 
         const colorGroups = {};
@@ -283,7 +296,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const wardrobeSection = document.createElement('div');
         wardrobeSection.style.cssText = "display: none; opacity: 0; transition: opacity 0.8s ease; flex-grow: 1; overflow-y: auto; min-height: 0; width: 100%; border-top: 1px solid #555; padding-top: 10px;";
-        
         wardrobeSection.innerHTML = `<p style="color: white; font-size: 1em; margin-bottom: 10px;">👇 Based on your <b>${skinTone}</b> skin, we suggest these colors:</p>`;
 
         const grid = document.createElement('div');
@@ -298,7 +310,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const card = createCard(items[0].front, color.toUpperCase() + " COLLECTION", () => { 
                     chooseFrontDesign(color, items, skinTone, bodyType, recommendedSize); 
                 });
-                
                 const badge = document.createElement('span');
                 badge.innerText = `${items.length}`;
                 badge.style.cssText = "position: absolute; top: 5px; right: 5px; background: #facc15; color: black; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold;";
@@ -309,10 +320,11 @@ document.addEventListener("DOMContentLoaded", () => {
   
         wardrobeSection.appendChild(grid);
         
+        // Use the smart reset instead of manual reload
         const restartBtn = document.createElement('button');
-        restartBtn.innerText = "Scan Again";
-        restartBtn.style.cssText = "margin-bottom: 10px; padding: 8px 20px; border-radius: 20px; border: none; background: #fff; cursor: pointer; align-self: center;";
-        restartBtn.onclick = () => location.reload();
+        restartBtn.innerText = "🔄 Start Over";
+        restartBtn.style.cssText = "margin-bottom: 10px; padding: 8px 20px; border-radius: 20px; border: none; background: #ef4444; color: white; font-weight: bold; cursor: pointer; align-self: center;";
+        restartBtn.onclick = resetToEventScreen;
         wardrobeSection.appendChild(restartBtn);
 
         container.appendChild(wardrobeSection);
@@ -332,7 +344,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- STEP 1: CHOOSE FRONT DESIGN ---
     function chooseFrontDesign(colorName, items, skinTone, bodyType, recommendedSize) {
         const grid = document.getElementById('outfit-grid');
         grid.innerHTML = "";
@@ -356,7 +367,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- STEP 2: CHOOSE BACK DESIGN & ROUTE TRY-ON ---
     function chooseBackDesign(selectedFrontItem, allItems, skinTone, bodyType, recommendedSize) {
         const grid = document.getElementById('outfit-grid');
         grid.innerHTML = "";
@@ -375,12 +385,16 @@ document.addEventListener("DOMContentLoaded", () => {
         allItems.forEach(item => {
             const card = createCard(item.back, "Back: " + item.name, () => {
                 
-                // 🚨 DECISION GATE: Which API did the user choose? 🚨
+                const resultsContainer = document.getElementById('results-container');
+                if(resultsContainer) {
+                    resultsContainer.remove(); 
+                }
+
                 console.log(`Starting try-on with mode: ${tryOnMode}`);
                 if (tryOnMode === "virtual") {
-                    startVirtualTryOn(selectedFrontItem.front); // Call Decart API
+                    startVirtualTryOn(selectedFrontItem.front); 
                 } else {
-                    triggerDoubleScan(selectedFrontItem.front, item.back); // Call Replicate API
+                    triggerDoubleScan(selectedFrontItem.front, item.back); 
                 }
 
             });
@@ -423,14 +437,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!data.apiKey) throw new Error("API Key was not returned from the server.");
 
             console.log("2. Fetching local shirt image...");
-            // Decart servers cannot read local 127.0.0.1 URLs, so we convert the image 
-            // to a raw File object directly in the browser!
             const shirtResponse = await fetch(shirtUrl);
             const shirtBlob = await shirtResponse.blob();
             const shirtFile = new File([shirtBlob], "shirt.jpg", { type: "image/jpeg" });
 
             console.log("3. Dynamically loading Decart SDK...");
-            // This safely imports the official SDK from a modern CDN
             const decartSDK = await import('https://esm.sh/@decartai/sdk');
             const createDecartClient = decartSDK.createDecartClient;
             const models = decartSDK.models;
@@ -446,11 +457,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 model: realtimeModel,
                 onRemoteStream: (transformedStream) => {
                     console.log("6. WebRTC Stream Active! Injecting video...");
-                    
-                    // Hide the green MediaPipe scanning boxes
                     poseCanvas.style.display = "none";
                     
-                    // Create overlay video for the AI stream
                     let outputVideo = document.getElementById('smartMirrorVideo');
                     if (!outputVideo) {
                         outputVideo = document.createElement('video');
@@ -463,11 +471,42 @@ document.addEventListener("DOMContentLoaded", () => {
                     outputVideo.play();
                     
                     if(msg) msg.textContent = "✨ Virtual Try-On Active! Move around.";
+
+                    // 🚨 INJECTING FUN PORTRAIT BUTTON FOR VIRTUAL TRY-ON 🚨
+                    const exitBtn = document.createElement('button');
+                    exitBtn.innerHTML = "✨ 🔄 Start New Try-On ✨";
+                    exitBtn.id = "virtual-reset-btn";
+                    // Fun, bouncy, gradient portrait styling
+                    exitBtn.style.cssText = `
+                        position: fixed;
+                        bottom: 8%;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        z-index: 9999;
+                        padding: 18px 40px;
+                        border-radius: 50px;
+                        background: linear-gradient(45deg, #FF512F, #DD2476); /* Vibrant gradient */
+                        color: white;
+                        font-weight: 800;
+                        border: 3px solid rgba(255,255,255,0.8);
+                        font-size: 1.3rem;
+                        cursor: pointer;
+                        box-shadow: 0 15px 35px rgba(221, 36, 118, 0.5);
+                        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        letter-spacing: 1px;
+                    `;
+                    // Bouncy hover effect
+                    exitBtn.onmouseover = () => exitBtn.style.transform = "translateX(-50%) scale(1.08) translateY(-5px)";
+                    exitBtn.onmouseout = () => exitBtn.style.transform = "translateX(-50%) scale(1) translateY(0)";
+                    exitBtn.onclick = resetToEventScreen; 
+                    document.body.appendChild(exitBtn);
                 }
             });
 
             console.log("7. Sending shirt image to AI...");
-            // We tell Lucy to apply the shirt file we generated in Step 2
             await activeRealtimeClient.set({
                 prompt: "Professional virtual try-on. The person is wearing the exact shirt from the reference image naturally.",
                 image: shirtFile,
@@ -489,20 +528,31 @@ document.addEventListener("DOMContentLoaded", () => {
         overlay.style.cssText = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center;";
         document.body.appendChild(overlay);
         try {
+            overlay.innerHTML = `
+                <div style="font-size: 60px; margin-bottom: 20px;">📸</div>
+                <h1 style="color: #facc15; font-size: 35px; margin-bottom: 10px;">Position Yourself!</h1>
+                <h2 style="color: white; font-weight: normal;">You are about to be scanned for Front and Back views.</h2>
+            `;
+            await new Promise(r => setTimeout(r, 4000)); 
+
             await runCountdown(overlay, "Front View", "Look at the camera");
             const userFrontImg = captureImage();
             await flashScreen(overlay);
+
             await runCountdown(overlay, "Back View", "Turn around!");
             const userBackImg = captureImage();
             await flashScreen(overlay);
-            overlay.innerHTML = `<div style="font-size: 50px; animation: spin 2s infinite linear;">⚙️</div><h2>Generating Front...</h2><p>Please wait...</p><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>`;
+
+            overlay.innerHTML = `<div style="font-size: 50px; animation: spin 2s infinite linear;">⚙️</div><h2 style="margin-top: 20px;">Generating Front...</h2><p>Please wait...</p><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>`;
             const frontResponse = await fetch('/generate-tryon', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_image: userFrontImg, shirt_path: frontPath }) });
             const frontResult = await frontResponse.json();
             if (frontResult.error) throw new Error("Front Error: " + frontResult.error);
-            overlay.innerHTML = `<div style="font-size: 50px; animation: spin 2s infinite linear;">⚙️</div><h2>Generating Back...</h2><p>Almost there...</p>`;
+
+            overlay.innerHTML = `<div style="font-size: 50px; animation: spin 2s infinite linear;">⚙️</div><h2 style="margin-top: 20px;">Generating Back...</h2><p>Almost there...</p>`;
             const backResponse = await fetch('/generate-tryon', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_image: userBackImg, shirt_path: backPath }) });
             const backResult = await backResponse.json();
             if (backResult.error) throw new Error("Back Error: " + backResult.error);
+            
             showDualResult(frontResult.generated_image, backResult.generated_image);
         } catch (err) { alert("Try-On Failed: " + err.message); } finally { if(document.getElementById('loading-overlay')) document.getElementById('loading-overlay').remove(); }
     }
@@ -529,10 +579,68 @@ document.addEventListener("DOMContentLoaded", () => {
         await new Promise(r => setTimeout(r, 100)); overlay.style.background = oldBg;
     }
   
+    // 🚨 UPDATED MODAL: Cleaned up and injects FUN button on CLOSE 🚨
     function showDualResult(frontUrl, backUrl) {
         const modal = document.createElement('div');
+        modal.id = "photo-tryon-modal";
         modal.style.cssText = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center;";
-        modal.innerHTML = `<h2 style="color: white; margin-bottom: 20px;">✨ Your Look ✨</h2><div style="display: flex; flex-direction: column; gap: 15px; justify-content: center; align-items: center; overflow-y: auto; width: 100%; max-height: 80vh; padding: 10px;"><div style="text-align: center;"><p style="color:white; margin-bottom:5px;">Front</p><img src="${frontUrl}" style="max-height: 35vh; border-radius: 10px; border: 2px solid #4ade80;"></div><div style="text-align: center;"><p style="color:white; margin-bottom:5px;">Back</p><img src="${backUrl}" style="max-height: 35vh; border-radius: 10px; border: 2px solid #4ade80;"></div></div><div style="margin-top: 20px;"><button id="close-modal" style="padding: 10px 30px; border-radius: 25px; border: none; font-weight: bold; cursor: pointer; background: white;">Close</button></div>`;
-        document.body.appendChild(modal); document.getElementById('close-modal').onclick = () => modal.remove();
+        
+        modal.innerHTML = `
+            <h2 style="color: white; margin-bottom: 10px;">✨ Your Look ✨</h2>
+            <p style="color: #4ade80; margin-bottom: 20px; font-size: 0.9rem;">(Click an image to view full size)</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px; justify-content: center; align-items: center; overflow-y: auto; width: 100%; max-height: 75vh; padding: 10px;">
+                <div style="text-align: center;">
+                    <p style="color:white; margin-bottom:5px; font-weight: bold;">Front</p>
+                    <img src="${frontUrl}" onclick="window.open('${frontUrl}', '_blank')" style="cursor: pointer; max-height: 30vh; border-radius: 10px; border: 2px solid #4ade80; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                </div>
+                <div style="text-align: center;">
+                    <p style="color:white; margin-bottom:5px; font-weight: bold;">Back</p>
+                    <img src="${backUrl}" onclick="window.open('${backUrl}', '_blank')" style="cursor: pointer; max-height: 30vh; border-radius: 10px; border: 2px solid #4ade80; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                </div>
+            </div>
+            
+            <div style="margin-top: 25px;">
+                <button id="close-modal" style="padding: 12px 35px; border-radius: 25px; border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; background: white; color: black; transition: background 0.2s;" onmouseover="this.style.background='#facc15'" onmouseout="this.style.background='white'">Close</button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal); 
+
+        // 🚨 INJECTING FUN PORTRAIT BUTTON ON CLOSE 🚨
+        document.getElementById('close-modal').onclick = () => {
+            modal.remove();
+            
+            const exitBtn = document.createElement('button');
+            exitBtn.innerHTML = "✨ 🔄 Start New Try-On ✨";
+            exitBtn.id = "photo-reset-btn";
+            // Fun, bouncy, gradient portrait styling
+            exitBtn.style.cssText = `
+                position: fixed;
+                bottom: 8%;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 9999;
+                padding: 18px 40px;
+                border-radius: 50px;
+                background: linear-gradient(45deg, #FF512F, #DD2476); /* Vibrant gradient */
+                color: white;
+                font-weight: 800;
+                border: 3px solid rgba(255,255,255,0.8);
+                font-size: 1.3rem;
+                cursor: pointer;
+                box-shadow: 0 15px 35px rgba(221, 36, 118, 0.5);
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                letter-spacing: 1px;
+            `;
+            // Bouncy hover effect
+            exitBtn.onmouseover = () => exitBtn.style.transform = "translateX(-50%) scale(1.08) translateY(-5px)";
+            exitBtn.onmouseout = () => exitBtn.style.transform = "translateX(-50%) scale(1) translateY(0)";
+            exitBtn.onclick = resetToEventScreen; 
+            document.body.appendChild(exitBtn);
+        };
     }
 });
