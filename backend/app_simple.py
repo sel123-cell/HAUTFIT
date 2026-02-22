@@ -20,9 +20,16 @@ load_dotenv(dotenv_path=env_path)
 # Debug: Print API Token status
 api_token = os.getenv("REPLICATE_API_TOKEN")
 if api_token:
-    print(f"✅ API Token Loaded: {api_token[:4]}...{api_token[-4:]}")
+    print(f"✅ Replicate Token Loaded: {api_token[:4]}...{api_token[-4:]}")
 else:
-    print("❌ ERROR: API Token NOT found. Check your .env file!")
+    print("❌ ERROR: Replicate Token NOT found. Check your .env file!")
+
+# Debug: Print Decart Token status
+decart_key = os.getenv("DECART_API_KEY")
+if decart_key:
+    print(f"✅ Decart Key Loaded: {decart_key[:4]}...{decart_key[-4:]}")
+else:
+    print("❌ ERROR: Decart Key NOT found. Check your .env file!")
 
 # --- Flask setup ---
 app = Flask(__name__, static_folder="../ui", template_folder="../ui")
@@ -47,7 +54,7 @@ face_detector = mp_face.FaceDetection(model_selection=1, min_detection_confidenc
 camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 # ==========================================
-#      DATA LOADING
+#       DATA LOADING
 # ==========================================
 
 # 1. LOAD WARDROBE DATABASE
@@ -72,7 +79,7 @@ SKIN_TONE_RULES = {
 }
 
 # ==========================================
-#              CORE ROUTES
+#               CORE ROUTES
 # ==========================================
 
 @app.route('/')
@@ -204,6 +211,22 @@ def recommend_outfit():
     except Exception as e:
         print(f"❌ Error in recommend: {e}")
         return jsonify({"error": str(e)}), 500
+
+# --- NEW: DECART VIRTUAL TRY-ON ROUTE ---
+@app.route('/api/decart-token', methods=['POST'])
+def handle_decart_token():
+    """
+    Directly fetches the DECART_API_KEY from the .env file 
+    and securely sends it to the frontend for the Live Mirror.
+    """
+    api_key = os.getenv("DECART_API_KEY")
+    
+    if api_key:
+        return jsonify({"apiKey": api_key})
+    else:
+        print("❌ ERROR: DECART_API_KEY is missing from your .env file!")
+        return jsonify({"error": "No API key found in .env"}), 500
+
 
 # --- PRIVACY-FOCUSED TRY-ON (RAM ONLY) ---
 @app.route('/generate-tryon', methods=['POST'])

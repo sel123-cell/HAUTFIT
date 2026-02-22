@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("✅ DOM Loaded - V12 (Portrait/Vertical Layout + Reveal Button)");
+    console.log("✅ DOM Loaded - V15 (Decart Dynamic Import Fix)");
 
     // --- DOM ELEMENTS ---
     const genderButtons = document.querySelectorAll(".gender-option");
@@ -16,6 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const cameraYesBtn = document.getElementById("cameraYesBtn");
     const cameraIntroContainer = document.getElementById("cameraIntroContainer");
+    const tryOnModeContainer = document.getElementById("tryOnModeContainer"); // NEW UI
+    const btnImageTryOn = document.getElementById("btnImageTryOn"); // NEW UI
+    const btnVirtualTryOn = document.getElementById("btnVirtualTryOn"); // NEW UI
     const uiPanel = document.getElementById("uiPanel");
 
     // --- STATE ---
@@ -23,6 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedGender = null;
     let currentSessionOutfits = []; 
     let isScanningComplete = false; 
+    let tryOnMode = null; // Will store "image" or "virtual"
+    let activeRealtimeClient = null; // For Decart API
 
     // --- 1. SIZE MAPPING RULES (Asian Fit) ---
     const sizeMapping = {
@@ -61,9 +66,37 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   
+    // ==========================================
+    // 🚨 NEW FLOW: PRE-SCAN MODE SELECTION 🚨
+    // ==========================================
     if (cameraYesBtn) {
       cameraYesBtn.addEventListener("click", () => {
         cameraIntroContainer.style.display = "none";
+        if (tryOnModeContainer) tryOnModeContainer.style.display = "block";
+      });
+    }
+
+    if (btnImageTryOn) {
+        btnImageTryOn.onmouseover = () => btnImageTryOn.style.transform = "scale(1.05)";
+        btnImageTryOn.onmouseout = () => btnImageTryOn.style.transform = "scale(1)";
+        btnImageTryOn.addEventListener("click", () => {
+            tryOnMode = "image";
+            startCameraCountdown();
+        });
+    }
+
+    if (btnVirtualTryOn) {
+        btnVirtualTryOn.onmouseover = () => btnVirtualTryOn.style.transform = "scale(1.05)";
+        btnVirtualTryOn.onmouseout = () => btnVirtualTryOn.style.transform = "scale(1)";
+        btnVirtualTryOn.addEventListener("click", () => {
+            tryOnMode = "virtual";
+            startCameraCountdown();
+        });
+    }
+
+    function startCameraCountdown() {
+        if(tryOnModeContainer) tryOnModeContainer.style.display = "none";
+        
         const msg = document.getElementById("cameraMessage");
         if(msg) msg.style.display = "block";
         
@@ -77,9 +110,8 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
           clearInterval(dotInterval);
           if(msg) msg.textContent = "🔍 Scanning started...";
-          initPoseDetection();
+          initPoseDetection(); // ONLY START CAMERA HERE
         }, 3000);
-      });
     }
   
     // --- 3. MEDIAPIPE & SCANNING ---
@@ -211,7 +243,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function displayResults(outfits, skinTone, bodyType, recommendedSize, showImmediately = false) {
         currentSessionOutfits = outfits; 
         
-        // Clear UI Panel
         uiPanel.innerHTML = "";
 
         const colorGroups = {};
@@ -223,10 +254,8 @@ document.addEventListener("DOMContentLoaded", () => {
   
         const container = document.createElement('div');
         container.id = "results-container";
-        // Fill the bottom panel, allow internal scrolling
         container.style.cssText = "background: rgba(0,0,0,0.9); padding: 20px; border-radius: 15px; text-align: center; width: 100%; max-height: 100%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5);";
   
-        // --- PART A: THE STATS ---
         const statsHTML = `
             <div style="flex-shrink: 0;">
                 <h1 style="color: #4ade80; margin: 0 0 10px 0; font-size: 1.8rem;">SCAN COMPLETE!</h1>
@@ -245,7 +274,6 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         container.innerHTML = statsHTML;
 
-        // --- PART B: THE REVEAL BUTTON ---
         const revealBtn = document.createElement('button');
         revealBtn.innerText = "✨ See Suggested Outfits";
         revealBtn.style.cssText = "padding: 12px 25px; font-size: 1.1em; background: #facc15; border: none; border-radius: 30px; cursor: pointer; font-weight: bold; color: black; transition: transform 0.2s; margin-bottom: 10px; align-self: center;";
@@ -253,7 +281,6 @@ document.addEventListener("DOMContentLoaded", () => {
         revealBtn.onmouseout = () => revealBtn.style.transform = "scale(1)";
         container.appendChild(revealBtn);
 
-        // --- PART C: THE WARDROBE (Hidden Initially) ---
         const wardrobeSection = document.createElement('div');
         wardrobeSection.style.cssText = "display: none; opacity: 0; transition: opacity 0.8s ease; flex-grow: 1; overflow-y: auto; min-height: 0; width: 100%; border-top: 1px solid #555; padding-top: 10px;";
         
@@ -289,9 +316,8 @@ document.addEventListener("DOMContentLoaded", () => {
         wardrobeSection.appendChild(restartBtn);
 
         container.appendChild(wardrobeSection);
-        uiPanel.appendChild(container); // Inject into Bottom Panel
+        uiPanel.appendChild(container);
 
-        // --- PART D: REVEAL LOGIC ---
         const showWardrobe = () => {
             revealBtn.style.display = "none";
             wardrobeSection.style.display = "flex";
@@ -330,7 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- STEP 2: CHOOSE BACK DESIGN ---
+    // --- STEP 2: CHOOSE BACK DESIGN & ROUTE TRY-ON ---
     function chooseBackDesign(selectedFrontItem, allItems, skinTone, bodyType, recommendedSize) {
         const grid = document.getElementById('outfit-grid');
         grid.innerHTML = "";
@@ -348,13 +374,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
         allItems.forEach(item => {
             const card = createCard(item.back, "Back: " + item.name, () => {
-                triggerDoubleScan(selectedFrontItem.front, item.back);
+                
+                // 🚨 DECISION GATE: Which API did the user choose? 🚨
+                console.log(`Starting try-on with mode: ${tryOnMode}`);
+                if (tryOnMode === "virtual") {
+                    startVirtualTryOn(selectedFrontItem.front); // Call Decart API
+                } else {
+                    triggerDoubleScan(selectedFrontItem.front, item.back); // Call Replicate API
+                }
+
             });
             grid.appendChild(card);
         });
     }
 
-    // Generic Card Creator
     function createCard(imagePath, labelText, onClickHandler) {
         const card = document.createElement('div');
         card.style.cssText = "cursor: pointer; transition: transform 0.2s; position: relative;";
@@ -370,8 +403,86 @@ document.addEventListener("DOMContentLoaded", () => {
         card.appendChild(img); card.appendChild(name);
         return card;
     }
-  
-    // --- 6. TRY ON LOGIC ---
+
+    // ==========================================
+    // 🪞 ENGINE 1: VIRTUAL TRY-ON (DECART AI)
+    // ==========================================
+    async function startVirtualTryOn(shirtUrl) {
+        const msg = document.getElementById("cameraMessage");
+        if(msg) {
+            msg.style.display = "block";
+            msg.textContent = "✨ Connecting to Virtual Try-On AI...";
+        }
+
+        try {
+            console.log("1. Fetching secure token from backend...");
+            const response = await fetch('/api/decart-token', { method: 'POST' });
+            if (!response.ok) throw new Error(`Backend Error: ${response.status}`);
+            const data = await response.json();
+            
+            if (!data.apiKey) throw new Error("API Key was not returned from the server.");
+
+            console.log("2. Fetching local shirt image...");
+            // Decart servers cannot read local 127.0.0.1 URLs, so we convert the image 
+            // to a raw File object directly in the browser!
+            const shirtResponse = await fetch(shirtUrl);
+            const shirtBlob = await shirtResponse.blob();
+            const shirtFile = new File([shirtBlob], "shirt.jpg", { type: "image/jpeg" });
+
+            console.log("3. Dynamically loading Decart SDK...");
+            // This safely imports the official SDK from a modern CDN
+            const decartSDK = await import('https://esm.sh/@decartai/sdk');
+            const createDecartClient = decartSDK.createDecartClient;
+            const models = decartSDK.models;
+
+            console.log("4. Initializing Decart Client...");
+            const client = createDecartClient({ apiKey: data.apiKey });
+            const realtimeModel = models.realtime("lucy_2_rt");
+
+            const stream = videoElement.srcObject;
+
+            console.log("5. Opening WebRTC connection to Decart servers...");
+            activeRealtimeClient = await client.realtime.connect(stream, {
+                model: realtimeModel,
+                onRemoteStream: (transformedStream) => {
+                    console.log("6. WebRTC Stream Active! Injecting video...");
+                    
+                    // Hide the green MediaPipe scanning boxes
+                    poseCanvas.style.display = "none";
+                    
+                    // Create overlay video for the AI stream
+                    let outputVideo = document.getElementById('smartMirrorVideo');
+                    if (!outputVideo) {
+                        outputVideo = document.createElement('video');
+                        outputVideo.id = 'smartMirrorVideo';
+                        outputVideo.style.cssText = "position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; z-index: 5; transform: scaleX(-1);";
+                        videoElement.parentElement.appendChild(outputVideo);
+                    }
+                    
+                    outputVideo.srcObject = transformedStream;
+                    outputVideo.play();
+                    
+                    if(msg) msg.textContent = "✨ Virtual Try-On Active! Move around.";
+                }
+            });
+
+            console.log("7. Sending shirt image to AI...");
+            // We tell Lucy to apply the shirt file we generated in Step 2
+            await activeRealtimeClient.set({
+                prompt: "Professional virtual try-on. The person is wearing the exact shirt from the reference image naturally.",
+                image: shirtFile,
+                enhance: true
+            });
+
+        } catch (err) { 
+            console.error("Virtual Try-On Error:", err);
+            alert("Virtual Try-On Error: " + err.message + "\n\nPress F12 and check the Console for more details."); 
+        }
+    }
+
+    // ==========================================
+    // 📸 ENGINE 2: IMAGE TRY-ON (REPLICATE API)
+    // ==========================================
     async function triggerDoubleScan(frontPath, backPath) {
         const overlay = document.createElement('div');
         overlay.id = 'loading-overlay';
@@ -406,7 +517,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function captureImage() {
         const captureCanvas = document.createElement('canvas');
         captureCanvas.width = videoElement.videoWidth; captureCanvas.height = videoElement.videoHeight;
-        const capCtx = captureCanvas.getContext('2d'); capCtx.drawImage(videoElement, 0, 0);
+        const capCtx = captureCanvas.getContext('2d');
+        capCtx.translate(captureCanvas.width, 0);
+        capCtx.scale(-1, 1);
+        capCtx.drawImage(videoElement, 0, 0);
         return captureCanvas.toDataURL('image/jpeg', 0.8);
     }
   
