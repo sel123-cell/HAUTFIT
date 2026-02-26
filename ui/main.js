@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("✅ DOM Loaded - V18 (Fun Portrait Reset Button & Modal Cleanup)");
+    console.log("✅ DOM Loaded - V32 (Delayed & Persistent Header)");
 
     // --- DOM ELEMENTS ---
     const genderButtons = document.querySelectorAll(".gender-option");
@@ -9,7 +9,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const genderScreen = document.getElementById("genderScreen");
     const hautfit = document.getElementById("hautfit");
     const logo = document.getElementById("logo");
+    const globalHeader = document.getElementById("global-header"); 
     
+    // Bottom Navigation Elements
+    const bottomNav = document.getElementById("bottomNavigation");
+    const navBackBtn = document.getElementById("nav-back-btn");
+    const navContinueBtn = document.getElementById("nav-continue-btn");
+    const progressBar = document.getElementById("progress-bar-fill");
+    const stepNumber = document.getElementById("step-number");
+    const stepName = document.getElementById("step-name");
+    const stepPercentage = document.getElementById("step-percentage");
+
     // Camera & Canvas
     const videoElement = document.getElementById("cameraVideo");
     const poseCanvas = document.getElementById("poseCanvas");
@@ -25,35 +35,117 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- STATE ---
     let selectedEvent = null;
     let selectedGender = null;
+    let currentStep = 0; // 0: Welcome, 1: Event, 2: Gender, 3: Camera
     let currentSessionOutfits = []; 
     let isScanningComplete = false; 
     let tryOnMode = null; 
     let activeRealtimeClient = null; 
+    let isCameraPlaying = false; 
 
-    // --- 1. SIZE MAPPING RULES (Asian Fit) ---
     const sizeMapping = {
         "male": { "Inverted Triangle": "L", "Rectangle": "M", "Triangle": "S" },
         "female": { "Inverted Triangle": "L", "Rectangle": "M", "Triangle": "S" }
     };
 
     // ==========================================
+    // 🧭 STEP PROGRESSION LOGIC
+    // ==========================================
+    function updateProgressUI() {
+        if (globalHeader) {
+            // 🚨 CHANGED: Keeps header visible on Event, Gender, AND Camera screens
+            if (currentStep >= 1) {
+                globalHeader.classList.add("show-header"); 
+            } else {
+                globalHeader.classList.remove("show-header"); 
+            }
+        }
+
+        if (currentStep === 0 || currentStep >= 3) {
+            bottomNav.style.display = "none";
+            return;
+        } else {
+            bottomNav.style.display = "flex";
+        }
+
+        navContinueBtn.disabled = true; 
+
+        if (currentStep === 1) {
+            stepNumber.innerText = "STEP 01";
+            stepName.innerText = "Select Event";
+            stepPercentage.innerText = "50%";
+            progressBar.style.width = "50%";
+            if (selectedEvent) navContinueBtn.disabled = false;
+        } else if (currentStep === 2) {
+            stepNumber.innerText = "STEP 02";
+            stepName.innerText = "Select Gender";
+            stepPercentage.innerText = "100%";
+            progressBar.style.width = "100%";
+            if (selectedGender) navContinueBtn.disabled = false;
+        } 
+    }
+
+    // ==========================================
+    // 🔙 BOTTOM NAV BUTTON EVENTS
+    // ==========================================
+    navBackBtn.addEventListener("click", () => {
+        if (currentStep === 1) {
+            currentStep = 0;
+            eventScreen.style.display = "none";
+            welcomeScreen.style.display = "flex";
+            if (logo) {
+                logo.style.display = "block";
+                logo.classList.remove("fade-out");
+            }
+            document.getElementById("introText").style.display = "none";
+            updateProgressUI();
+        } else if (currentStep === 2) {
+            currentStep = 1;
+            genderScreen.style.display = "none";
+            eventScreen.style.display = "block"; 
+            updateProgressUI();
+        }
+    });
+
+    navContinueBtn.addEventListener("click", () => {
+        if (currentStep === 1 && selectedEvent) {
+            currentStep = 2;
+            eventScreen.style.display = "none";
+            genderScreen.style.display = "block"; 
+            updateProgressUI();
+        } else if (currentStep === 2 && selectedGender) {
+            currentStep = 3;
+            genderScreen.style.display = "none";
+            hautfit.style.display = "block";
+            cameraIntroContainer.style.display = "block";
+            if(tryOnModeContainer) tryOnModeContainer.style.display = "none";
+            setTimeout(() => hautfit.style.opacity = "1", 200);
+            updateProgressUI(); 
+            
+            startWebcamPreview();
+        }
+    });
+
+    // ==========================================
     // 🔄 KIOSK SMART RESET LOGIC
     // ==========================================
-    // Flushes memory and instantly routes back to the Event screen
     function resetToEventScreen() {
         sessionStorage.setItem('skipToEvent', 'true');
         location.reload();
     }
 
-    // Check if we just refreshed from a "Generate Again" click
     if (sessionStorage.getItem('skipToEvent') === 'true') {
         sessionStorage.removeItem('skipToEvent');
         if (welcomeScreen) welcomeScreen.style.display = "none";
         if (logo) logo.style.display = "none";
-        if (eventScreen) eventScreen.style.display = "block";
+        if (eventScreen) eventScreen.style.display = "block"; 
+        currentStep = 1;
+        
+        setTimeout(updateProgressUI, 50);
     }
 
-    // --- 2. NAVIGATION LOGIC ---
+    // ==========================================
+    // 🖱️ CARD SELECTION & HIGHLIGHT LOGIC
+    // ==========================================
     if (logo && sessionStorage.getItem('skipToEvent') !== 'true') {
       logo.addEventListener("click", () => {
         logo.classList.add("fade-out");
@@ -63,26 +155,47 @@ document.addEventListener("DOMContentLoaded", () => {
   
     const getStartedBtn = document.getElementById("get-started-btn");
     if (getStartedBtn) {
-      getStartedBtn.addEventListener("click", () => { welcomeScreen.style.display = "none"; eventScreen.style.display = "block"; });
+      getStartedBtn.addEventListener("click", () => { 
+          welcomeScreen.style.display = "none"; 
+          eventScreen.style.display = "block"; 
+          currentStep = 1;
+          updateProgressUI();
+      });
     }
   
     eventButtons.forEach(btn => {
       btn.addEventListener("click", () => {
+        eventButtons.forEach(b => b.classList.remove("selected")); 
+        btn.classList.add("selected"); 
         selectedEvent = btn.dataset.event; 
-        eventScreen.style.display = "none";
-        genderScreen.style.display = "block";
+        navContinueBtn.disabled = false;
       });
     });
   
     genderButtons.forEach(btn => {
       btn.addEventListener("click", () => {
+        genderButtons.forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected"); 
         selectedGender = btn.dataset.gender;
-        genderScreen.style.display = "none";
-        hautfit.style.display = "block";
-        setTimeout(() => hautfit.style.opacity = "1", 200);
+        navContinueBtn.disabled = false;
       });
     });
-  
+
+    // ==========================================
+    // 🚨 CAMERA & SCANNING LOGIC 🚨
+    // ==========================================
+    async function startWebcamPreview() {
+        if (isCameraPlaying) return;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoElement.srcObject = stream;
+            videoElement.play();
+            isCameraPlaying = true;
+        } catch (err) {
+            console.error("Camera Preview Error:", err);
+        }
+    }
+
     if (cameraYesBtn) {
       cameraYesBtn.addEventListener("click", () => {
         cameraIntroContainer.style.display = "none";
@@ -128,7 +241,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 3000);
     }
   
-    // --- 3. MEDIAPIPE & SCANNING ---
     function initPoseDetection() {
       const pose = new Pose({ locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
       pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, enableSegmentation: false, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
@@ -238,9 +350,12 @@ document.addEventListener("DOMContentLoaded", () => {
   
       async function startCameraStream() {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-          videoElement.srcObject = stream;
-          videoElement.play();
+          if (!isCameraPlaying) {
+              const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+              videoElement.srcObject = stream;
+              videoElement.play();
+              isCameraPlaying = true;
+          }
           const camera = new Camera(videoElement, { onFrame: async () => { await pose.send({ image: videoElement }); }, width: 640, height: 480 });
           camera.start();
           startScanning(); 
@@ -320,7 +435,6 @@ document.addEventListener("DOMContentLoaded", () => {
   
         wardrobeSection.appendChild(grid);
         
-        // Use the smart reset instead of manual reload
         const restartBtn = document.createElement('button');
         restartBtn.innerText = "🔄 Start Over";
         restartBtn.style.cssText = "margin-bottom: 10px; padding: 8px 20px; border-radius: 20px; border: none; background: #ef4444; color: white; font-weight: bold; cursor: pointer; align-self: center;";
@@ -345,6 +459,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function chooseFrontDesign(colorName, items, skinTone, bodyType, recommendedSize) {
+        if (selectedEvent !== "streetwear") {
+            const resultsContainer = document.getElementById('results-container');
+            if(resultsContainer) resultsContainer.remove(); 
+
+            const chosenFront = items[0].front; 
+
+            if (tryOnMode === "virtual") {
+                startVirtualTryOn(chosenFront); 
+            } else {
+                triggerDoubleScan(chosenFront, null); 
+            }
+            return; 
+        }
+
         const grid = document.getElementById('outfit-grid');
         grid.innerHTML = "";
         
@@ -472,11 +600,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                     if(msg) msg.textContent = "✨ Virtual Try-On Active! Move around.";
 
-                    // 🚨 INJECTING FUN PORTRAIT BUTTON FOR VIRTUAL TRY-ON 🚨
                     const exitBtn = document.createElement('button');
                     exitBtn.innerHTML = "✨ 🔄 Start New Try-On ✨";
                     exitBtn.id = "virtual-reset-btn";
-                    // Fun, bouncy, gradient portrait styling
                     exitBtn.style.cssText = `
                         position: fixed;
                         bottom: 8%;
@@ -485,20 +611,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         z-index: 9999;
                         padding: 18px 40px;
                         border-radius: 50px;
-                        background: linear-gradient(45deg, #FF512F, #DD2476); /* Vibrant gradient */
+                        background: linear-gradient(45deg, #FF512F, #DD2476); 
                         color: white;
                         font-weight: 800;
                         border: 3px solid rgba(255,255,255,0.8);
                         font-size: 1.3rem;
                         cursor: pointer;
                         box-shadow: 0 15px 35px rgba(221, 36, 118, 0.5);
-                        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
+                        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
                         display: flex;
                         align-items: center;
                         gap: 10px;
                         letter-spacing: 1px;
                     `;
-                    // Bouncy hover effect
                     exitBtn.onmouseover = () => exitBtn.style.transform = "translateX(-50%) scale(1.08) translateY(-5px)";
                     exitBtn.onmouseout = () => exitBtn.style.transform = "translateX(-50%) scale(1) translateY(0)";
                     exitBtn.onclick = resetToEventScreen; 
@@ -525,41 +650,66 @@ document.addEventListener("DOMContentLoaded", () => {
     async function triggerDoubleScan(frontPath, backPath) {
         const overlay = document.createElement('div');
         overlay.id = 'loading-overlay';
-        overlay.style.cssText = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center;";
+        overlay.style.cssText = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; transition: background 0.4s ease;";
         document.body.appendChild(overlay);
+        
         try {
             overlay.innerHTML = `
                 <div style="font-size: 60px; margin-bottom: 20px;">📸</div>
                 <h1 style="color: #facc15; font-size: 35px; margin-bottom: 10px;">Position Yourself!</h1>
-                <h2 style="color: white; font-weight: normal;">You are about to be scanned for Front and Back views.</h2>
+                <h2 style="color: white; font-weight: normal;">You are about to be scanned.</h2>
             `;
             await new Promise(r => setTimeout(r, 4000)); 
 
+            overlay.style.background = "rgba(0,0,0,0.15)"; 
+
+            // 1. ALWAYS DO FRONT SCAN
             await runCountdown(overlay, "Front View", "Look at the camera");
             const userFrontImg = captureImage();
             await flashScreen(overlay);
-
-            await runCountdown(overlay, "Back View", "Turn around!");
-            const userBackImg = captureImage();
-            await flashScreen(overlay);
-
-            overlay.innerHTML = `<div style="font-size: 50px; animation: spin 2s infinite linear;">⚙️</div><h2 style="margin-top: 20px;">Generating Front...</h2><p>Please wait...</p><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>`;
+            
+            overlay.style.background = "rgba(0,0,0,0.9)";
+            overlay.innerHTML = `<div style="font-size: 50px; animation: spin 2s infinite linear;">⚙️</div><h2 style="margin-top: 20px; text-shadow: none;">Generating AI Look...</h2><p style="text-shadow: none;">Please wait...</p><style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>`;
+            
+            // 2. ALWAYS SEND FRONT TO API
             const frontResponse = await fetch('/generate-tryon', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_image: userFrontImg, shirt_path: frontPath }) });
             const frontResult = await frontResponse.json();
             if (frontResult.error) throw new Error("Front Error: " + frontResult.error);
 
-            overlay.innerHTML = `<div style="font-size: 50px; animation: spin 2s infinite linear;">⚙️</div><h2 style="margin-top: 20px;">Generating Back...</h2><p>Almost there...</p>`;
-            const backResponse = await fetch('/generate-tryon', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_image: userBackImg, shirt_path: backPath }) });
-            const backResult = await backResponse.json();
-            if (backResult.error) throw new Error("Back Error: " + backResult.error);
+            // 3. CONDITIONAL BACK SCAN (ONLY IF STREETWEAR)
+            let backResultImage = null;
+            if (backPath) {
+                overlay.style.background = "rgba(0,0,0,0.15)"; 
+                await runCountdown(overlay, "Back View", "Turn around!");
+                const userBackImg = captureImage();
+                await flashScreen(overlay);
+                
+                overlay.style.background = "rgba(0,0,0,0.9)";
+                overlay.innerHTML = `<div style="font-size: 50px; animation: spin 2s infinite linear;">⚙️</div><h2 style="margin-top: 20px; text-shadow: none;">Generating Back...</h2><p style="text-shadow: none;">Almost there...</p>`;
+                const backResponse = await fetch('/generate-tryon', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_image: userBackImg, shirt_path: backPath }) });
+                const backResult = await backResponse.json();
+                if (backResult.error) throw new Error("Back Error: " + backResult.error);
+                
+                backResultImage = backResult.generated_image;
+            }
             
-            showDualResult(frontResult.generated_image, backResult.generated_image);
-        } catch (err) { alert("Try-On Failed: " + err.message); } finally { if(document.getElementById('loading-overlay')) document.getElementById('loading-overlay').remove(); }
+            // 4. SHOW RESULTS
+            showDualResult(frontResult.generated_image, backResultImage);
+            
+        } catch (err) { 
+            alert("Try-On Failed: " + err.message); 
+        } finally { 
+            if(document.getElementById('loading-overlay')) document.getElementById('loading-overlay').remove(); 
+        }
     }
   
     async function runCountdown(overlay, title, instruction) {
-        for (let i = 3; i > 0; i--) {
-            overlay.innerHTML = `<h1 style="color: #4ade80; font-size: 40px;">${title}</h1><h2 style="margin-bottom: 20px;">${instruction}</h2><div style="font-size: 100px; font-weight: bold; animation: pop 0.5s ease;">${i}</div>`;
+        for (let i = 10; i > 0; i--) {
+            overlay.innerHTML = `
+                <h1 style="color: #4ade80; font-size: 45px; text-shadow: 2px 2px 15px black, 0 0 20px black;">${title}</h1>
+                <h2 style="margin-bottom: 20px; text-shadow: 2px 2px 15px black, 0 0 20px black;">${instruction}</h2>
+                <div style="font-size: 130px; font-weight: bold; text-shadow: 3px 3px 20px black, 0 0 30px black; animation: pop 0.5s ease;">${i}</div>
+            `;
             await new Promise(r => setTimeout(r, 1000));
         }
     }
@@ -575,29 +725,40 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   
     async function flashScreen(overlay) {
-        const oldBg = overlay.style.background; overlay.style.background = "white"; overlay.innerHTML = "";
-        await new Promise(r => setTimeout(r, 100)); overlay.style.background = oldBg;
+        const oldBg = overlay.style.background; 
+        overlay.style.background = "white"; 
+        overlay.innerHTML = "";
+        await new Promise(r => setTimeout(r, 150)); 
+        overlay.style.background = oldBg;
     }
   
-    // 🚨 UPDATED MODAL: Cleaned up and injects FUN button on CLOSE 🚨
     function showDualResult(frontUrl, backUrl) {
         const modal = document.createElement('div');
         modal.id = "photo-tryon-modal";
         modal.style.cssText = "position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center;";
+        
+        let imagesHTML = `
+            <div style="text-align: center;">
+                <p style="color:white; margin-bottom:5px; font-weight: bold;">Front</p>
+                <img src="${frontUrl}" onclick="window.open('${frontUrl}', '_blank')" style="cursor: pointer; max-height: 40vh; border-radius: 10px; border: 2px solid #4ade80; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            </div>
+        `;
+        
+        if (backUrl) {
+            imagesHTML += `
+                <div style="text-align: center;">
+                    <p style="color:white; margin-bottom:5px; font-weight: bold;">Back</p>
+                    <img src="${backUrl}" onclick="window.open('${backUrl}', '_blank')" style="cursor: pointer; max-height: 40vh; border-radius: 10px; border: 2px solid #4ade80; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                </div>
+            `;
+        }
         
         modal.innerHTML = `
             <h2 style="color: white; margin-bottom: 10px;">✨ Your Look ✨</h2>
             <p style="color: #4ade80; margin-bottom: 20px; font-size: 0.9rem;">(Click an image to view full size)</p>
             
             <div style="display: flex; flex-direction: column; gap: 20px; justify-content: center; align-items: center; overflow-y: auto; width: 100%; max-height: 75vh; padding: 10px;">
-                <div style="text-align: center;">
-                    <p style="color:white; margin-bottom:5px; font-weight: bold;">Front</p>
-                    <img src="${frontUrl}" onclick="window.open('${frontUrl}', '_blank')" style="cursor: pointer; max-height: 30vh; border-radius: 10px; border: 2px solid #4ade80; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                </div>
-                <div style="text-align: center;">
-                    <p style="color:white; margin-bottom:5px; font-weight: bold;">Back</p>
-                    <img src="${backUrl}" onclick="window.open('${backUrl}', '_blank')" style="cursor: pointer; max-height: 30vh; border-radius: 10px; border: 2px solid #4ade80; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                </div>
+                ${imagesHTML}
             </div>
             
             <div style="margin-top: 25px;">
@@ -607,14 +768,12 @@ document.addEventListener("DOMContentLoaded", () => {
         
         document.body.appendChild(modal); 
 
-        // 🚨 INJECTING FUN PORTRAIT BUTTON ON CLOSE 🚨
         document.getElementById('close-modal').onclick = () => {
             modal.remove();
             
             const exitBtn = document.createElement('button');
             exitBtn.innerHTML = "✨ 🔄 Start New Try-On ✨";
             exitBtn.id = "photo-reset-btn";
-            // Fun, bouncy, gradient portrait styling
             exitBtn.style.cssText = `
                 position: fixed;
                 bottom: 8%;
@@ -623,20 +782,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 z-index: 9999;
                 padding: 18px 40px;
                 border-radius: 50px;
-                background: linear-gradient(45deg, #FF512F, #DD2476); /* Vibrant gradient */
+                background: linear-gradient(45deg, #FF512F, #DD2476); 
                 color: white;
                 font-weight: 800;
                 border: 3px solid rgba(255,255,255,0.8);
                 font-size: 1.3rem;
                 cursor: pointer;
                 box-shadow: 0 15px 35px rgba(221, 36, 118, 0.5);
-                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy transition */
+                transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
                 display: flex;
                 align-items: center;
                 gap: 10px;
                 letter-spacing: 1px;
             `;
-            // Bouncy hover effect
             exitBtn.onmouseover = () => exitBtn.style.transform = "translateX(-50%) scale(1.08) translateY(-5px)";
             exitBtn.onmouseout = () => exitBtn.style.transform = "translateX(-50%) scale(1) translateY(0)";
             exitBtn.onclick = resetToEventScreen; 

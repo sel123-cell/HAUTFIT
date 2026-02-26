@@ -2,6 +2,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
 /* ==========================================================================
+   0. GLOBAL TOP HEADER ("SmartFit AI")
+   ========================================================================== */
+#global-header {
+    position: fixed;
+    top: 100px; 
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem; 
+    font-weight: 700; 
+    color: #ffffff;
+    letter-spacing: 1.5px;
+    z-index: 1500; /* 🚨 Increased to stay above the dark countdown overlay */
+    text-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+    pointer-events: none; 
+    
+    opacity: 0;
+    transform: translateY(-20px);
+    /* Fast hide when returning to the Welcome Screen */
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#global-header.show-header {
+    opacity: 1;
+    transform: translateY(0);
+    /* 🚨 DELAY: Waits 0.8 seconds before dropping down 🚨 */
+    transition: opacity 0.6s ease 2s, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.8s;
+}
+
+/* ==========================================================================
    1. BASE MIRROR SETTINGS & ANIMATED VIGNETTE BACKGROUND
    ========================================================================== */
 body, html {
@@ -12,7 +43,7 @@ body, html {
     overflow-y: auto; 
     
     background-image: 
-        radial-gradient(circle at center, transparent 30%, #050001 95%), 
+        radial-gradient(circle at center, transparent 4%, #050001 70%), 
         linear-gradient(135deg, #1a0205 0%, #5c0f19 30%, #8f1525 50%, #5c0f19 70%, #1a0205 100%);
     
     background-size: 100% 100%, 300% 300%;
@@ -118,7 +149,9 @@ h1, h2, p { margin-top: 0; letter-spacing: 0.5px; }
 }
 
 #eventOptionsScreen, #genderScreen {
-    position: absolute; top: 50%; left: 50%;
+    position: absolute; 
+    top: 40%; 
+    left: 50%;
     transform: translate(-50%, -50%); 
     width: 90%; max-width: 500px; 
 }
@@ -266,7 +299,8 @@ button, .gender-option {
     box-shadow: 0 15px 30px rgba(59, 130, 246, 0.6) !important; transform: translateY(-3px);
 }
 
-#btnVirtualTryOn, #btnImageTryOn, #results-container button:first-of-type, #results-container button:last-of-type {
+/* 🚨 FIXED: Removed Engine Cards from the forced red background 🚨 */
+#results-container button:first-of-type, #results-container button:last-of-type {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important; 
     border: none !important; color: #ffffff !important; 
     box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4) !important;
@@ -276,7 +310,6 @@ button, .gender-option {
    4. CAMERA & VIDEO FEED UI
    ========================================================================== */
 #hautfit {
-    /* main.js turns this into display: block, so we let it be block */
     width: 100%;
     min-height: 100vh;
     padding: 0;
@@ -287,11 +320,9 @@ button, .gender-option {
     display: flex; 
     flex-direction: column; 
     width: 100%; 
-    max-width: 450px; /* Keeps the portrait layout sleek */
+    max-width: 450px; 
     margin: 0 auto; 
     gap: 20px; 
-    
-    /* THE MAGIC FIX: This inner container handles the perfect centering now */
     justify-content: center; 
     align-items: center;
     min-height: 100vh; 
@@ -302,7 +333,6 @@ button, .gender-option {
 .video-container {
     position: relative; 
     width: 100%; 
-    /* TALLER CAMERA FEED: Changes it to a vertical mirror format */
     aspect-ratio: 9 / 14; 
     border-radius: 24px; 
     overflow: hidden;
@@ -323,10 +353,9 @@ button, .gender-option {
     justify-content: center;
 }
 
-/* SMALLER UI BOXES */
 #cameraIntroContainer, #tryOnModeContainer {
-    padding: 25px !important; /* Shrunk padding */
-    width: 95%; /* Makes the box slightly narrower than the camera */
+    padding: 25px !important; 
+    width: 95%; 
     max-width: 400px;
 }
 
@@ -337,7 +366,6 @@ button, .gender-option {
 ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
 ::-webkit-scrollbar-thumb { background: #ef4444; border-radius: 10px; } 
 
-/* THE MAGIC: Blur the camera and background when the results box appears */
 body:has(#results-container) .video-container {
     filter: blur(15px) brightness(0.4);
     transition: filter 0.8s ease, brightness 0.8s ease;
@@ -348,21 +376,17 @@ body:has(#results-container) .watercolor-bg {
     transition: all 0.8s ease;
 }
 
-/* Pull the results box out of the layout and lock it in the center */
 #results-container {
-    position: fixed !important; /* Forces it to float over everything */
+    position: fixed !important; 
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    
     width: 90% !important;
     max-width: 450px !important;
     max-height: 85vh !important;
     z-index: 9999 !important;
     box-sizing: border-box !important;
     overflow: hidden !important;
-    
-    /* Premium Dark Glassmorphism Style */
     background: rgba(30, 0, 5, 0.75) !important; 
     backdrop-filter: blur(30px) !important;
     -webkit-backdrop-filter: blur(30px) !important;
@@ -370,8 +394,6 @@ body:has(#results-container) .watercolor-bg {
     border-top: 1px solid rgba(255, 255, 255, 0.35) !important;
     border-radius: 32px !important;
     box-shadow: 0 40px 100px rgba(0, 0, 0, 0.9) !important;
-    
-    /* Smooth 3D pop-in animation */
     animation: modalPopIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
 }
 
@@ -380,7 +402,6 @@ body:has(#results-container) .watercolor-bg {
     100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
-/* Wardrobe Grid Styles */
 #outfit-grid {
     display: grid; grid-template-columns: repeat(2, 1fr) !important; 
     gap: 15px; width: 100%; box-sizing: border-box; padding-bottom: 15px;
@@ -396,17 +417,14 @@ body:has(#results-container) .watercolor-bg {
     transform: scale(1.03);
 }
 
-
 /* ==========================================================================
    6. ANIMATIONS & LOGO
    ========================================================================== */
-/* Standard fade in for static elements */
 @keyframes fadeIn { 
     from { opacity: 0; transform: translateY(20px); } 
     to { opacity: 1; transform: translateY(0); } 
 }
 
-/* NEW: Dedicated fade-in for absolutely centered screens to prevent jumping */
 @keyframes centerFadeIn { 
     from { opacity: 0; transform: translate(-50%, -45%); } 
     to { opacity: 1; transform: translate(-50%, -50%); } 
@@ -416,7 +434,6 @@ body:has(#results-container) .watercolor-bg {
     animation: fadeIn 0.8s ease-out forwards;
 }
 
-/* Apply the fixed animation to your main screens */
 #welcomeScreen, #eventOptionsScreen, #genderScreen {
     animation: centerFadeIn 0.8s ease-out forwards;
 }
@@ -437,14 +454,13 @@ body:has(#results-container) .watercolor-bg {
 }
 
 /* ==========================================================================
-   7. FLOATING STATUS PILL (Fixes Camera Centering)
+   7. FLOATING STATUS PILL
    ========================================================================== */
 #cameraMessage {
     position: fixed !important;
-    bottom: 8% !important; /* Floats nicely near the bottom of the screen */
+    bottom: 8% !important; 
     left: 50% !important;
     transform: translateX(-50%) !important;
-    
     background: rgba(0, 0, 0, 0.65) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
@@ -452,7 +468,6 @@ body:has(#results-container) .watercolor-bg {
     border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
     border-radius: 50px !important;
     padding: 15px 35px !important;
-    
     font-size: 1.1rem !important;
     color: #4ade80 !important;
     box-shadow: 0 15px 30px rgba(0,0,0,0.5) !important;
@@ -463,9 +478,8 @@ body:has(#results-container) .watercolor-bg {
 }
 
 /* ==========================================================================
-   8. OVERRIDE INLINE SPACERS (Forces Camera to Center)
+   8. OVERRIDE INLINE SPACERS
    ========================================================================== */
-/* Kills the invisible flex spacer pushing the camera up */
 #uiPanel {
     flex: 0 0 auto !important; 
     min-height: 0 !important;
@@ -473,12 +487,303 @@ body:has(#results-container) .watercolor-bg {
     padding: 0 !important;
 }
 
-/* Forces the main HTML wrapper to vertically center */
 #hautfit > div {
     justify-content: center !important;
 }
 
-/* Removes old top-margins from the camera wrapper */
 #hautfit > div > div:first-child {
     margin-top: 0 !important;
+}
+
+/* ==========================================================================
+   9. BOTTOM NAVIGATION & PROGRESS BAR
+   ========================================================================== */
+#bottomNavigation {
+    position: fixed;
+    bottom: 400px; /* Snug to the bottom */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 450px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    animation: centerFadeIn 0.8s ease-out forwards;
+    height: 100px;
+}
+
+.progress-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.progress-text-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.step-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+#step-number {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+}
+
+#step-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+#step-percentage {
+    font-size: 1.4rem;
+    font-weight: 800;
+    font-style: italic;
+    color: #ffffff;
+}
+
+.progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#progress-bar-fill {
+    height: 100%;
+    width: 25%;
+    background: #1d4ed8;
+    border-radius: 10px;
+    transition: width 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 0 10px rgba(29, 78, 216, 0.8);
+}
+
+.nav-buttons-row {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+}
+
+.nav-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.secondary-btn {
+    background: rgba(80, 15, 20, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.secondary-btn:hover {
+    background: rgba(100, 20, 25, 0.8);
+    transform: translateY(-2px);
+}
+
+.primary-btn {
+    background: #1d4ed8;
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(29, 78, 216, 0.3);
+}
+
+.primary-btn:hover:not(:disabled) {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(29, 78, 216, 0.5);
+}
+
+.primary-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* ==========================================================================
+   10. ACTIVE SELECTION HIGHLIGHTS
+   ========================================================================== */
+.event-card.selected, .gender-card.selected {
+    background: rgba(29, 78, 216, 0.2) !important; /* Soft blue tint */
+    border: 2px solid #3b82f6 !important; /* Bright blue border */
+    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4) !important; /* Blue glow */
+    transform: translateY(-5px) !important; /* Keep it popped up */
+}
+
+/* Make the icons inside the selected cards light up blue too */
+.event-card.selected .card-icon, .gender-card.selected .gender-icon-circle {
+    background: #3b82f6 !important;
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.8) !important;
+    color: white !important;
+}
+
+/* ==========================================================================
+   11. ENGINE SELECTION UI (PORTRAIT MODE FIX)
+   ========================================================================== */
+#tryOnModeContainer {
+    text-align: left !important;
+    padding: 35px 30px !important;
+}
+
+#tryOnModeContainer h2 {
+    font-size: 1.5rem;
+    color: #ffffff;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+#tryOnModeContainer .subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 25px;
+}
+
+.engine-cards-container {
+    display: flex;
+    /* 🚨 THIS LINE MAKES THEM STACK VERTICALLY 🚨 */
+    flex-direction: column; 
+    gap: 15px;
+    width: 100%;
+}
+
+.engine-card {
+    /* flex: 1 is no longer needed for width, but good to keep for height balance */
+    flex: 1;
+    /* Glass effect */
+    background: rgba(255, 255, 255, 0.01) !important; 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px); 
+    border: 1px solid rgba(255, 255, 255, 0.15) !important; 
+    border-radius: 20px !important;
+    padding: 20px 15px !important;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin: 0 !important;
+    /* Ensure they fill the width when stacked */
+    width: 100% !important; 
+    box-sizing: border-box !important; /* Ensures padding doesn't break width */
+    text-align: left !important;
+}
+
+.engine-card:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-3px); 
+}
+
+.engine-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.image-icon {
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+}
+
+.virtual-icon {
+    background: #1d4ed8; 
+    color: #ffffff;
+}
+
+.engine-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.green-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    margin-left: 6px;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.engine-desc {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.4;
+    margin: 0;
+    white-space: normal; 
+    font-weight: 400;
+}
+
+.bg-stars {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    pointer-events: none;
+}
+.virtual-icon {
+    background: #1d4ed8; 
+    color: #ffffff;
+}
+
+.engine-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.green-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    margin-left: 6px;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.engine-desc {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.4;
+    margin: 0;
+    white-space: normal; 
+    font-weight: 400;
+}
+
+.bg-stars {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    pointer-events: none;
 }
